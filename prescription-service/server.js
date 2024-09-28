@@ -1,13 +1,16 @@
 const express = require("express");
 const app = express();
+const dotenv = require("dotenv");
 const prescriptionRoutes = require("./routes/prescriptions.js");
+
+dotenv.config();
 
 app.use(express.json());
 
 app.use("/api/prescriptions", prescriptionRoutes);
 
-const PORT = process.env.PRESCRIPTION_PORT || 3001;
-
-app.listen(PORT, () => {
-  console.log(`Prescription Service running on port ${PORT}`);
+app.listen(process.env.PRESCRIPTION_PORT, () => {
+  console.log(
+    `Prescription Service running on port ${process.env.PRESCRIPTION_PORT}`
+  );
 });
