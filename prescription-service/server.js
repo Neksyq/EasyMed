@@ -7,7 +7,7 @@ dotenv.config();
 
 app.use(express.json());
 
-app.use("/api/prescriptions", prescriptionRoutes);
+app.use(prescriptionRoutes);
 
 app.listen(process.env.PRESCRIPTION_PORT, () => {
   console.log(
