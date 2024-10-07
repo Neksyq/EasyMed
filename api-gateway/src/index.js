@@ -9,7 +9,6 @@ app.use(express.json());
 app.use(morgan("combined"));
 
 const apiProxy = (path, target) => {
-  console.log()
   app.use(
     path,
     createProxyMiddleware({
@@ -23,7 +22,6 @@ const apiProxy = (path, target) => {
   );
 };
 
-
 // Routes and their target services
 // apiProxy("/api/auth", process.env.AUTH_SERVICE_URL);
 apiProxy("/api/prescriptions", process.env.PRESCRIPTION_SERVICE_URL);
@@ -36,7 +34,7 @@ app.get("/health", (req, res) => {
 });
 
 // Start the server
-const PORT = process.env.PORT;
-app.listen(PORT, () => {
-  console.log(`API Gateway is running on port ${PORT}`);
+const API_GATEWAY_PORT = process.env.API_GATEWAY_PORT;
+app.listen(API_GATEWAY_PORT, () => {
+  console.log(`API Gateway is running on port ${API_GATEWAY_PORT}`);
 });
