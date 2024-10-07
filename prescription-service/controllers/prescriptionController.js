@@ -1,25 +1,95 @@
-const pool = require("../config/db");
+const prescriptionService = require("../services/prescriptionService");
+const { validationResult } = require("express-validator");
 
-exports.createPrescription = async (req, res) => {
-  const { patientName, medication, dosage } = req.body;
+// Create a new prescription
+exports.createPrescription = async (req, res, next) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ errors: errors.array() });
+  }
+
   try {
-    const result = await pool.query(
-      "INSERT into prescriptions( patient_name, medication, dosage) VALUES ($1, $2, $3) RETURNING *",
-      [patientName, medication, dosage]
-    );
-    res.status(201).json(result.row[0]);
+    const prescription = await prescriptionService.create(req.body);
+    res.status(201).json(prescription);
   } catch (error) {
-    console.log(error);
-    res.status(500).json({ error: "Failed to create prescription" });
+    next(error);
   }
 };
 
+// Get all prescriptions
 exports.getPrescriptions = async (req, res, next) => {
   try {
-    const result = await pool.query("SELECT * FROM prescriptions");
-    res.status(200).json(result.rows);
+    const prescriptions = await prescriptionService.getAll();
+    res.status(200).json(prescriptions);
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: "Failed to retrieve prescriptions" });
+    next(error);
+  }
+};
+
+// Get prescription by id
+exports.getPrescriptionById = async (req, res, next) => {
+  try {
+    const prescription = await prescriptionService.getById(req.params.id);
+    if (prescription.length === 0) {
+      return res.status(404).json({ error: "Prescription not found" });
+    }
+    res.status(200).json(prescription[0]);
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Delete a prescription by ID
+exports.deletePrescription = async (req, res, next) => {
+  try {
+    const deleted = await prescriptionService.delete(req.params.id);
+
+    if (!deleted) {
+      return res.status(404).json({ error: "Prescription not found" });
+    }
+
+    res.status(200).json({ message: "Prescription deleted successfully" });
+  } catch (error) {
+    next(error);
+  }
+};
+
+//Update a prescription by ID (optimized and flexible)
+exports.updatePrescription = async (req, res) => {
+  const { id } = req.params;
+
+  const allowedColumns = ["patient_name", "medication", "dosage"];
+
+  const fieldsToUpdate = Object.keys(req.body).filter(
+    (key) =>
+      req.body[key] !== undefined &&
+      req.body[key] !== null &&
+      allowedColumns.includes(key)
+  );
+
+  if (fieldsToUpdate.length === 0) {
+    return res
+      .status(400)
+      .json({ error: "No valid fields provided for update" });
+  }
+
+  const fields = fieldsToUpdate.map((field) => `${field} = ?`);
+  const values = fieldsToUpdate.map((field) => req.body[field]);
+
+  values.push(id);
+
+  try {
+    const result = await prescriptionService.update(fields, values);
+
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ error: "Prescription not found" });
+    }
+
+    const [updatedPrescription] = await prescriptionService.getById(id);
+
+    res.status(200).json(updatedPrescription[0]);
+  } catch (error) {
+    console.error("Failed to update prescription:", error);
+    res.status(500).json({ error: "Failed to update prescription" });
   }
 };
