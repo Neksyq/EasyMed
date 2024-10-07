@@ -41,6 +41,7 @@ build/Release
 # Dependency directories
 node_modules/
 prescription-service/node_modules/
+
 api-gateway/node_modules/
 jspm_packages/
 
@@ -80,6 +81,8 @@ web_modules/
 .env.test.local
 .env.production.local
 .env.local
+prescription-service/.env
+
 
 # parcel-bundler cache (https://parceljs.org/)
 .cache
