@@ -3,10 +3,10 @@ services:
     build:
       context: ./api-gateway
     ports:
-      - "4000:4000"
+      - ${API_GATEWAY_PORT}:${API_GATEWAY_PORT}  # Define your API gateway port in .env
     environment:
-      - PORT=4000
-      - PRESCRIPTION_SERVICE_URL=http://prescription-service:3001
+      - PORT=${API_GATEWAY_PORT}
+      - PRESCRIPTION_SERVICE_URL=http://prescription-service:${PRESCRIPTION_PORT}
     depends_on:
       - prescription-service
     networks:
@@ -19,15 +19,34 @@ services:
     build:
       context: ./prescription-service
     ports:
-      - "3001:3001"
+      - ${PRESCRIPTION_PORT}:${PRESCRIPTION_PORT}  # Define your prescription service port in .env
     environment:
-      - PORT=3001
+      DB_HOST: ${DB_HOST}  # Use the service name for the DB host
+      DB_USER: ${DB_USER}    # Ensure these variables are defined in .env
+      DB_PASSWORD: ${DB_PASSWORD}
+      DB_NAME: ${DB_NAME}
+      DB_PORT: ${DB_PORT}  # MySQL container's internal port
     networks:
       - app-network
     volumes:
       - ./prescription-service:/usr/src/app
       - /usr/src/app/node_modules
 
+  prescription_db:
+    image: mysql:latest
+    environment:
+      - MYSQL_ROOT_PASSWORD=${DB_ROOT_PASSWORD}
+      - MYSQL_DATABASE=${DB_NAME}
+      - MYSQL_USER=${DB_USER}
+      - MYSQL_PASSWORD=${DB_PASSWORD}
+    volumes:
+      - prescription-db-data:/var/lib/mysql
+    networks:
+      - app-network
+
 networks:
   app-network:
     driver: bridge
+
+volumes:
+  prescription-db-data:  # Define the volume for MySQL
