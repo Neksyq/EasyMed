@@ -1,27 +1,25 @@
-const {
-  createPrescriptionService,
-  getPrescriptionByIdService,
-} = require("../services/prescriptionService");
+const pool = require("../config/db");
 
-exports.createPrescription = async (req, res, next) => {
+exports.createPrescription = async (req, res) => {
+  const { patientName, medication, dosage } = req.body;
   try {
-    const newPrescription = req.body;
-    const prescription = await createPrescriptionService(newPrescription);
-    res.status(201).json(prescription);
+    const result = await pool.query(
+      "INSERT into prescriptions( patient_name, medication, dosage) VALUES ($1, $2, $3) RETURNING *",
+      [patientName, medication, dosage]
+    );
+    res.status(201).json(result.row[0]);
   } catch (error) {
-    next(error);
+    console.log(error);
+    res.status(500).json({ error: "Failed to create prescription" });
   }
 };
 
-exports.getPrescriptionById = async (req, res, next) => {
+exports.getPrescriptions = async (req, res, next) => {
   try {
-    const { id } = req.params;
-    const prescription = await getPrescriptionByIdService(id);
-    if (!prescription) {
-      return res.status(404).json({ message: "Prescription not found" });
-    }
-    res.status(200).json(prescription);
+    const result = await pool.query("SELECT * FROM prescriptions");
+    res.status(200).json(result.rows);
   } catch (error) {
-    next(error);
+    console.error(error);
+    res.status(500).json({ error: "Failed to retrieve prescriptions" });
   }
 };
