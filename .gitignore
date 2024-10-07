@@ -81,7 +81,7 @@ web_modules/
 .env.test.local
 .env.production.local
 .env.local
-prescription-service/.env
+git rm --cached prescription-service/.env
 
 
 # parcel-bundler cache (https://parceljs.org/)
