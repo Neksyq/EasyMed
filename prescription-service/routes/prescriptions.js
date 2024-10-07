@@ -2,11 +2,11 @@ const express = require("express");
 const router = express.Router();
 const {
   createPrescription,
-  getPrescriptionById,
+  getPrescriptions,
 } = require("../controllers/prescriptionController");
 
 router.post("/", createPrescription);
 
-router.get("/:id", getPrescriptionById);
+router.get("/", getPrescriptions);
 
 module.exports = router;
