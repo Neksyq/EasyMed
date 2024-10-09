@@ -1,4 +1,5 @@
 const prescriptionService = require("../services/prescriptionService");
+const rxNormAPI = require("../apis/rxNormAPI");
 const { validationResult } = require("express-validator");
 
 // Create a new prescription
@@ -8,7 +9,14 @@ exports.createPrescription = async (req, res, next) => {
     return res.status(400).json({ errors: errors.array() });
   }
 
+  const rxcui = await rxNormAPI.checkMedicationInRxNorm("aspirin");
+  if (!rxcui) {
+    return res
+      .status(400)
+      .json({ error: "Invalid medication. Medication not found in RxNorm." });
+  }
   try {
+    req.body.rxcui = rxcui;
     const prescription = await prescriptionService.create(req.body);
     res.status(201).json(prescription);
   } catch (error) {
