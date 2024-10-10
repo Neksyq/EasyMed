@@ -40,8 +40,6 @@ build/Release
 
 # Dependency directories
 node_modules/
-prescription-service/node_modules/
-
 api-gateway/node_modules/
 jspm_packages/
 
