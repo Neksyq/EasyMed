@@ -1,0 +1,9 @@
+[submodule "services/prescription-service"]
+	path = services/prescription-service
+	url = https://github.com/Neksyq/EasyMed_Prescription_Service
+[submodule "services/api-gateway"]
+	path = services/api-gateway
+	url = https://github.com/Neksyq/EasyMed_API_Gateway
+[submodule "services/auth-service"]
+	path = services/auth-service
+	url = https://github.com/Neksyq/EasyMed_Auth_Service
