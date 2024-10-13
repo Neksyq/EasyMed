@@ -9,6 +9,7 @@ services:
       - PRESCRIPTION_SERVICE_URL=http://prescription-service:${PRESCRIPTION_PORT}
     depends_on:
       - prescription-service
+      - auth-service
     networks:
       - app-network
     volumes:
@@ -25,18 +26,33 @@ services:
       DB_HOST: ${DB_HOST}
       DB_USER: ${DB_USER}
       DB_PASSWORD: ${DB_PASSWORD}
-      DB_NAME: ${DB_NAME}
-      DB_PORT: ${DB_PORT}
+      DB_NAME: ${PRESCRIPTION_DB_NAME}
+      DB_PORT: ${PRESCRIPTION_DB_PORT}
     networks:
       - app-network
     volumes:
       - ./services/prescription-service:/usr/src/app
       - /usr/src/app/node_modules
       - /usr/src/app/dist
+    
+  auth-service:
+    build:
+      context: ./services/auth-service
+    ports:
+      - ${AUTH_PORT}:${AUTH_PORT}
+    environment:
+      DB_HOST: ${DB_HOST}
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+      DB_NAME: ${AUTH_DB_NAME}
+      DB_PORT: ${AUTH_DB_PORT}
+    networks:
+      - app-network
+    volumes:
+      - ./services/auth-service:/usr/src/app
+      - /usr/src/app/node_modules
+      - /usr/src/app/dist
 
 networks:
   app-network:
     driver: bridge
-
-volumes:
-  prescription-db-data:
