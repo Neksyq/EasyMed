@@ -22,22 +22,28 @@ services:
       context: ./services/prescription-service
     ports:
       - ${PRESCRIPTION_PORT}:${PRESCRIPTION_PORT}
+    depends_on:
+      - kafka
     environment:
       DB_HOST: ${DB_HOST}
       DB_USER: ${DB_USER}
       DB_PASSWORD: ${DB_PASSWORD}
       DB_NAME: ${PRESCRIPTION_DB_NAME}
       DB_PORT: ${PRESCRIPTION_DB_PORT}
+      KAFKA_BROKER: kafka:9092
     networks:
       - app-network
     volumes:
       - ./services/prescription-service:/usr/src/app
       - /usr/src/app/node_modules
       - /usr/src/app/dist
+    restart: on-failure
     
   auth-service:
     build:
       context: ./services/auth-service
+    depends_on:
+      - kafka
     ports:
       - ${AUTH_PORT}:${AUTH_PORT}
     environment:
@@ -46,12 +52,38 @@ services:
       DB_PASSWORD: ${DB_PASSWORD}
       DB_NAME: ${AUTH_DB_NAME}
       DB_PORT: ${AUTH_DB_PORT}
+      KAFKA_BROKER: kafka:9092
     networks:
       - app-network
     volumes:
       - ./services/auth-service:/usr/src/app
       - /usr/src/app/node_modules
       - /usr/src/app/dist
+    restart: on-failure
+  
+  zookeeper:
+    image: confluentinc/cp-zookeeper:latest
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    ports:
+      - "2181:2181"
+    networks:
+      - app-network
+  
+  kafka:
+    image: confluentinc/cp-kafka:latest
+    depends_on:
+      - zookeeper
+    ports:
+      - "9092:9092"
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092      
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+    networks:
+      - app-network
 
 networks:
   app-network:
